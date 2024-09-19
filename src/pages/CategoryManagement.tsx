@@ -14,6 +14,7 @@ export interface Category {
   myBookmarkId: number | null;
   hashtags: string[];
   spotList: SpotData[];
+  totalPages: number;
 }
 
 export type SubType =
@@ -151,6 +152,8 @@ const CategoryManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
 
+  const token = localStorage.getItem("token");
+
   const handleAddTag = (newTag: string) => {
     setTags([...tags, newTag]);
   };
@@ -165,7 +168,12 @@ const CategoryManagement: React.FC = () => {
 
   const fetchCategories = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/category/list/search/typeless?query=&page=${page}&size=10`
+      `http://dittotrip.site/category/list/search/typeless?query=&page=${page}&size=10`,
+      {
+        headers: {
+          Authorization: `${token}`, // Add the Authorization header
+        },
+      }
     );
     setCategories(response.data.categoryDataList);
     setTotalPages(response.data.totalPages);
@@ -178,7 +186,11 @@ const CategoryManagement: React.FC = () => {
   };
 
   const handleDeleteCategory = async (categoryId: number) => {
-    await axios.delete(`/api/categories/${categoryId}`);
+    await axios.delete(`http://dittotrip.site/category/${categoryId}`, {
+      headers: {
+        Authorization: `${token}`, // Add the Authorization header
+      },
+    });
     setIsDeleteModalOpen(false);
     fetchCategories(currentPage);
   };

@@ -33,25 +33,54 @@ export type ReportTargetType =
   | "DITTO_COMMENT"
   | "USER";
 
-export interface UserData {
-  userId: number;
-  nickname: string;
+export interface ReportDataResponse {
+  reportDataList: ReportData[];
+  totalPage: number;
 }
 
 export interface ReportData {
   reportId: number;
   reportReasonType: ReportReasonType;
-  reportTargetType: ReportTargetType;
+  reportTargetType: ReportTargetType; // Adjust other target types if needed
   isHandled: boolean;
   createdDateTime: Date;
   userData: UserData;
   targetId: number;
+  contentPath: string;
 }
 
-export interface ReportListResponse {
-  // 겟 report/list api
-  reportDataList: ReportData[];
-  totalPage: number;
+export interface UserData {
+  userId: number;
+  nickname: string;
+  userProfileData: UserProfileData;
+}
+
+export interface UserProfileData {
+  progressionBar: number;
+  itemSkin: UserRewardItem;
+  itemEyes: UserRewardItem;
+  itemMouse: UserRewardItem;
+  itemHair: UserRewardItem;
+  itemAccessory: UserRewardItem;
+  badgeData: BadgeData;
+}
+
+export interface UserRewardItem {
+  userRewardId: number;
+  name: string;
+  imagePath: string;
+  itemType: "SKIN" | "EYES" | "MOUSE" | "HAIR" | "ACCESSORY";
+  createdDateTime: string;
+}
+
+export interface BadgeData {
+  rewardId: number;
+  name: string;
+  body: string;
+  conditionBody: string;
+  imagePath: string;
+  createdDateTime: string;
+  userBadgeId: number;
 }
 
 const Table = styled.table`
@@ -174,9 +203,11 @@ const ReportManagement: React.FC = () => {
     }
   };
 
+  const dittoURL = "https://dittotrip.site"; // Base URL
+
   return (
     <div>
-      <h1>신고 관리</h1>
+      <h2>신고 관리</h2>
       <Table>
         <Thead>
           <tr>
@@ -197,7 +228,15 @@ const ReportManagement: React.FC = () => {
               <Td>{report.reportTargetType}</Td>
               <Td>{formatDate(report.createdDateTime)}</Td>
               <Td>{reportReasonMap[report.reportReasonType]}</Td>
-              <Td>{"https://www.naver.com/"}</Td>
+              <Td>
+                <a
+                  href={`${dittoURL}${report.contentPath}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  link
+                </a>
+              </Td>
               <Td>
                 {report.userData.userId !== 200 && (
                   <Button

@@ -1,4 +1,3 @@
-// pages/SpotRequestManagement.tsx
 import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import axios from "axios";
@@ -8,6 +7,15 @@ interface SpotRequest {
   id: number;
   name: string;
   location: string;
+}
+
+interface CategoryRequest {
+  name: string;
+  categoryMajorType: string;
+  categorySubType: string;
+  hashtagNames: string[];
+  spotIds: number[];
+  image: File | null;
 }
 
 const Table = styled.table`
@@ -41,6 +49,14 @@ const SpotRequestManagement: React.FC = () => {
   const [spotRequests, setSpotRequests] = useState<SpotRequest[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [categoryData, setCategoryData] = useState<CategoryRequest>({
+    name: "",
+    categoryMajorType: "PERSON",
+    categorySubType: "PERSON_SINGER",
+    hashtagNames: [],
+    spotIds: [],
+    image: null,
+  });
 
   useEffect(() => {
     fetchSpotRequests(currentPage);
@@ -62,9 +78,79 @@ const SpotRequestManagement: React.FC = () => {
     fetchSpotRequests(currentPage);
   };
 
+  const handleAddCategory = async () => {
+    const formData = new FormData();
+    formData.append(
+      "categorySaveReq",
+      new Blob([JSON.stringify(categoryData)], {
+        type: "application/json",
+      })
+    );
+
+    if (categoryData.image) {
+      formData.append("image", categoryData.image);
+    }
+
+    try {
+      await axios.post("/category", formData);
+      // Handle success: refresh category list or display a success message
+    } catch (error) {
+      console.error("카테고리 추가 실패", error);
+    }
+  };
+
+  const handleEditCategory = async (categoryId: number) => {
+    const formData = new FormData();
+    formData.append(
+      "categoryModifyReq",
+      new Blob([JSON.stringify(categoryData)], {
+        type: "application/json",
+      })
+    );
+
+    if (categoryData.image) {
+      formData.append("image", categoryData.image);
+    }
+
+    try {
+      await axios.put(`/category/${categoryId}`, formData);
+      // Handle success: refresh category list or display a success message
+    } catch (error) {
+      console.error("카테고리 수정 실패", error);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    try {
+      await axios.delete(`/category/${categoryId}`);
+      // Handle success: refresh category list or display a success message
+    } catch (error) {
+      console.error("카테고리 삭제 실패", error);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setCategoryData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setCategoryData((prev) => ({
+        ...prev,
+        image: e.target.files![0],
+      }));
+    }
+  };
+
   return (
     <div>
-      <h1>스팟 신청 관리</h1>
+      <h2>스팟 신청 관리</h2>
       <Table>
         <thead>
           <tr>
@@ -103,6 +189,44 @@ const SpotRequestManagement: React.FC = () => {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+
+      {/* Add/Edit Category Form */}
+      <div>
+        <h3>{categoryData ? "카테고리 수정" : "카테고리 추가"}</h3>
+        <input
+          type="text"
+          name="name"
+          value={categoryData.name}
+          placeholder="카테고리 이름"
+          onChange={handleInputChange}
+        />
+        <select
+          name="categoryMajorType"
+          value={categoryData.categoryMajorType}
+          onChange={handleInputChange}
+        >
+          <option value="PERSON">PERSON</option>
+          <option value="PLACE">PLACE</option>
+        </select>
+        <input type="file" name="image" onChange={handleFileChange} />
+        <Button
+          onClick={() =>
+            categoryData
+              ? handleEditCategory(1 /* Replace with actual categoryId */)
+              : handleAddCategory()
+          }
+        >
+          {categoryData ? "카테고리 수정" : "카테고리 추가"}
+        </Button>
+        <Button
+          color="#dc3545"
+          onClick={() =>
+            handleDeleteCategory(1 /* Replace with actual categoryId */)
+          }
+        >
+          카테고리 삭제
+        </Button>
+      </div>
     </div>
   );
 };

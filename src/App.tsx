@@ -6,6 +6,8 @@ import CategoryManagement from "./pages/CategoryManagement";
 import SpotManagement from "./pages/SpotManagement";
 import ReportManagement from "./pages/ReportManagement";
 import SpotRequestManagement from "./pages/SpotRequestManagement";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import styled from "styled-components";
 import Sidebar from "./components/SlideBar";
 
@@ -27,11 +29,47 @@ const App: React.FC = () => {
         <Sidebar />
         <Content>
           <Routes>
-            <Route path="/members" element={<MemberManagement />} />
-            <Route path="/categories" element={<CategoryManagement />} />
-            <Route path="/spots" element={<SpotManagement />} />
-            <Route path="/reports" element={<ReportManagement />} />
-            <Route path="/spot-requests" element={<SpotRequestManagement />} />
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/members"
+              element={
+                <ProtectedRoute>
+                  <MemberManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <ProtectedRoute>
+                  <CategoryManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/spots"
+              element={
+                <ProtectedRoute>
+                  <SpotManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <ReportManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/spot-requests"
+              element={
+                <ProtectedRoute>
+                  <SpotRequestManagement />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Content>
       </Container>

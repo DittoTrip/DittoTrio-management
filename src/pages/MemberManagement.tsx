@@ -5,14 +5,49 @@ import axios from "axios";
 import styled from "styled-components";
 import { gray20, gray40, gray60 } from "../style/color";
 
-export interface UserData {
-  userId: number;
-  nickname: string;
+export interface UserAdminData {
+  userDataForAdminList: UserData[];
+  totalPages: number;
 }
 
-export interface SearchUserResponse {
-  userDataList: UserData[];
-  totalPages: 0;
+export interface UserData {
+  userId: number;
+  userStatus: "NORMAL" | "BANNED" | "INACTIVE"; // Adjust other possible statuses if needed
+  nickname: string;
+  email: string;
+  createdDateTime: string;
+  progressionBar: number;
+  reviewCount: number;
+  dittoCount: number;
+  userProfileData: UserProfileData;
+}
+
+export interface UserProfileData {
+  progressionBar: number;
+  itemSkin: UserRewardItem;
+  itemEyes: UserRewardItem;
+  itemMouse: UserRewardItem;
+  itemHair: UserRewardItem;
+  itemAccessory: UserRewardItem;
+  badgeData: BadgeData;
+}
+
+export interface UserRewardItem {
+  userRewardId: number;
+  name: string;
+  imagePath: string;
+  itemType: "SKIN" | "EYES" | "MOUSE" | "HAIR" | "ACCESSORY"; // Adjust item types if needed
+  createdDateTime: string;
+}
+
+export interface BadgeData {
+  rewardId: number;
+  name: string;
+  body: string;
+  conditionBody: string;
+  imagePath: string;
+  createdDateTime: string;
+  userBadgeId: number;
 }
 
 const Table = styled.table`
@@ -105,15 +140,22 @@ const MemberManagement: React.FC = () => {
   const [suspensionDays, setSuspensionDays] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     fetchMembers(currentPage);
   }, [currentPage]);
 
   const fetchMembers = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/user/list?query=&page=${page}`
+      `http://dittotrip.site/user/list/search/admin?query=&page=${page}&size=10`,
+      {
+        headers: {
+          Authorization: `${token}`, // Add the Authorization header
+        },
+      }
     );
-    setMembers(response.data.userDataList);
+    setMembers(response.data.userDataForAdminList);
     setTotalPages(response.data.totalPages);
   };
 
@@ -137,7 +179,7 @@ const MemberManagement: React.FC = () => {
 
   return (
     <div>
-      <h1>회원 관리</h1>
+      <h2>회원 관리</h2>
       <Table>
         <Thead>
           <tr>
@@ -146,7 +188,6 @@ const MemberManagement: React.FC = () => {
             <Th>가입일자</Th>
             <Th>등급</Th>
             <Th>경험치</Th>
-            <Th>리뷰/디토</Th>
             <Th>비고</Th>
           </tr>
         </Thead>
@@ -154,11 +195,10 @@ const MemberManagement: React.FC = () => {
           {members.map((member) => (
             <tr key={member.userId}>
               <Td>{member.nickname}</Td>
-              <Td>{/* 가입일자 표시 */}</Td>
-              <Td>{/* 가입일자 표시 */}</Td>
-              <Td>{/* 가입일자 표시 */}</Td>
-              <Td>{/* 경험치 */}</Td>
-              <Td>{/* 리뷰/디토 */}</Td>
+              <Td>{member.email}</Td>
+              <Td>{member.createdDateTime}</Td>
+              <Td>{member.progressionBar}</Td>
+              <Td>{member.reviewCount / member.dittoCount}</Td>
               <Td>
                 {member.userId !== 200 && (
                   <Button onClick={() => handleSuspendClick(member.userId)}>
