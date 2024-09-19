@@ -1,4 +1,3 @@
-// pages/SpotManagement.tsx
 import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import axios from "axios";
@@ -75,13 +74,12 @@ const SpotManagement: React.FC = () => {
     );
     console.log(response.data.spotDataList);
     setSpots(response.data.spotDataList);
-    setTotalPages(2);
-    // setTotalPages(response.data.totalPages);
+    setTotalPages(response.data.totalPages);
   };
 
   const handleDeleteSpot = async (spotId: number) => {
     await axios.delete(`/api/spots/${spotId}`);
-    fetchSpots(currentPage); // 삭제 후 목록 갱신
+    fetchSpots(currentPage);
   };
 
   return (

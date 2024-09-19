@@ -38,7 +38,7 @@ const MenuItem = styled.li<{ active: boolean }>`
 `;
 
 const Sidebar: React.FC = () => {
-  const location = useLocation(); // 현재 경로를 가져옴
+  const location = useLocation();
 
   return (
     <SidebarContainer>

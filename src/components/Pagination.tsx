@@ -1,4 +1,3 @@
-// components/Pagination.tsx
 import React from "react";
 import styled from "styled-components";
 import { gray20, gray40, gray60 } from "../style/color";

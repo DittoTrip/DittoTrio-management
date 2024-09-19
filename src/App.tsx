@@ -1,4 +1,3 @@
-// App.tsx
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import MemberManagement from "./pages/MemberManagement";
@@ -10,6 +9,7 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import styled from "styled-components";
 import Sidebar from "./components/SlideBar";
+import UserDetail from "./pages/UserDetail";
 
 const Container = styled.div`
   display: flex;
@@ -35,6 +35,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <MemberManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/member/detail/:id"
+              element={
+                <ProtectedRoute>
+                  <UserDetail />
                 </ProtectedRoute>
               }
             />

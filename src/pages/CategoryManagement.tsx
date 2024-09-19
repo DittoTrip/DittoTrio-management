@@ -29,7 +29,7 @@ export type MajorType = "CONTENT" | "PERSON";
 
 const Table = styled.table`
   flex: 1;
-  width: 1000px;
+  width: 75vw;
 
   border-collapse: separate;
   border-spacing: 0;
@@ -199,7 +199,7 @@ const CategoryManagement: React.FC = () => {
     if (selectedCategory) {
       await axios.put(`/api/categories/${selectedCategory.categoryId}`, {
         categoryModifyReq,
-        image: "string", // 기본 이미지 URL (수정할 경우 실제 이미지를 넣을 수 있음)
+        image: "string",
       });
       setIsEditModalOpen(false);
       setCurrentPage(0);

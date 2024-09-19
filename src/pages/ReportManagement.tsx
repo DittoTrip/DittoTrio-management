@@ -165,7 +165,7 @@ const ReportManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
 
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [shouldDeleteContent, setShouldDeleteContent] =
     useState<boolean>(false);
@@ -186,24 +186,32 @@ const ReportManagement: React.FC = () => {
   };
 
   const handleSuspendClick = (memberId: number) => {
-    setSelectedMemberId(memberId);
+    setSelectedReportId(memberId);
     setIsModalOpen(true);
   };
-
+  console.log(selectedReportId);
   const handleSubmit = async () => {
-    if (selectedMemberId !== null) {
+    if (selectedReportId !== null) {
       const data = {
         shouldDeleteContent,
         shouldPermanentlyBan,
         suspensionDays: shouldPermanentlyBan ? 0 : suspensionDays,
       };
-      await axios.post(`/api/members/${selectedMemberId}/suspend`, data);
+      const res = await axios.post(
+        `http://dittotrip.site/report/${selectedReportId}`,
+        data
+      );
+      if (res.status == 200) {
+        alert("적용되었습니다.");
+      } else {
+        alert("문제가 발생했습니다.");
+      }
       setIsModalOpen(false);
       fetchReports(currentPage);
     }
   };
 
-  const dittoURL = "https://dittotrip.site"; // Base URL
+  const dittoURL = "https://dittotrip.site"; // 배포 url
 
   return (
     <div>

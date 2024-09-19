@@ -89,8 +89,8 @@ const Login: React.FC = () => {
         password,
       });
       const token = response.data.accessToken;
-      localStorage.setItem("token", token); // Store token in localStorage
-      navigate("/members"); // Redirect to a protected route after login
+      localStorage.setItem("token", token);
+      navigate("/members");
     } catch (error) {
       console.error("Login failed", error);
       setError("Login failed. Please try again.");

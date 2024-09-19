@@ -2,184 +2,171 @@ import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import axios from "axios";
 import styled from "styled-components";
+import { gray20, gray40, gray60 } from "../style/color";
 
 interface SpotRequest {
-  id: number;
+  spotApplyId: number;
   name: string;
-  location: string;
-}
-
-interface CategoryRequest {
-  name: string;
-  categoryMajorType: string;
-  categorySubType: string;
-  hashtagNames: string[];
-  spotIds: number[];
-  image: File | null;
+  address: string;
+  createdDateTime: string;
+  spotApplyStatus: string;
+  pointX: number;
+  pointY: number;
+  imagePaths: string[];
+  categoryDataList: { categoryId: number; name: string }[];
+  hashtags: string[];
 }
 
 const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
+  flex: 1;
+  width: 75vw;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-bottom: 20px;
+`;
 
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
+const Thead = styled.thead`
+  background-color: #f2f2f2;
+  border-radius: 10px;
+`;
 
-  th {
-    background-color: #f2f2f2;
-    font-weight: bold;
+const Th = styled.th`
+  padding: 8px;
+  text-align: left;
+  &:first-child {
+    border-top-left-radius: 10px;
   }
+  &:last-child {
+    border-top-right-radius: 10px;
+  }
+`;
+
+const Td = styled.td`
+  padding: 8px;
 `;
 
 const Button = styled.button`
   padding: 5px 10px;
-  background-color: ${(props) => props.color || "#007bff"};
-  color: white;
+  background-color: ${gray20};
+  color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-right: 5px;
+  margin: 0 4px;
+
+  &:hover {
+    background-color: ${gray40};
+  }
+
+  &:disabled {
+    background-color: ${gray60};
+    cursor: not-allowed;
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 100%;
 `;
 
 const SpotRequestManagement: React.FC = () => {
   const [spotRequests, setSpotRequests] = useState<SpotRequest[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [categoryData, setCategoryData] = useState<CategoryRequest>({
-    name: "",
-    categoryMajorType: "PERSON",
-    categorySubType: "PERSON_SINGER",
-    hashtagNames: [],
-    spotIds: [],
-    image: null,
-  });
+  const [selectedSpot, setSelectedSpot] = useState<SpotRequest | null>(null); // 선택된 스팟 신청
 
   useEffect(() => {
     fetchSpotRequests(currentPage);
   }, [currentPage]);
 
   const fetchSpotRequests = async (page: number) => {
-    const response = await axios.get(`/api/spot-requests?page=${page}`);
-    setSpotRequests(response.data.spotRequests);
+    const response = await axios.get(
+      `http://dittotrip.site/spot/apply/list?page=${page}`
+    );
+    setSpotRequests(response.data.spotApplyDataList);
     setTotalPages(response.data.totalPages);
   };
 
-  const handleApproveSpot = async (spotRequestId: number) => {
-    await axios.post(`/api/spot-requests/${spotRequestId}/approve`);
+  const handleApproveSpot = async (spotApplyId: number) => {
+    const response = await axios.post(
+      `http://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=true`
+    );
+    if (response.status == 200) {
+      alert("승인되었습니다.");
+    }
     fetchSpotRequests(currentPage);
   };
 
-  const handleRejectSpot = async (spotRequestId: number) => {
-    await axios.post(`/api/spot-requests/${spotRequestId}/reject`);
+  const handleRejectSpot = async (spotApplyId: number) => {
+    const response = await axios.post(
+      `http://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=false`
+    );
+    if (response.status == 200) {
+      alert("거절되었습니다.");
+    }
     fetchSpotRequests(currentPage);
   };
 
-  const handleAddCategory = async () => {
-    const formData = new FormData();
-    formData.append(
-      "categorySaveReq",
-      new Blob([JSON.stringify(categoryData)], {
-        type: "application/json",
-      })
-    );
-
-    if (categoryData.image) {
-      formData.append("image", categoryData.image);
-    }
-
-    try {
-      await axios.post("/category", formData);
-      // Handle success: refresh category list or display a success message
-    } catch (error) {
-      console.error("카테고리 추가 실패", error);
-    }
+  const handleOpenModal = (spotRequest: SpotRequest) => {
+    setSelectedSpot(spotRequest);
   };
 
-  const handleEditCategory = async (categoryId: number) => {
-    const formData = new FormData();
-    formData.append(
-      "categoryModifyReq",
-      new Blob([JSON.stringify(categoryData)], {
-        type: "application/json",
-      })
-    );
-
-    if (categoryData.image) {
-      formData.append("image", categoryData.image);
-    }
-
-    try {
-      await axios.put(`/category/${categoryId}`, formData);
-      // Handle success: refresh category list or display a success message
-    } catch (error) {
-      console.error("카테고리 수정 실패", error);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: number) => {
-    try {
-      await axios.delete(`/category/${categoryId}`);
-      // Handle success: refresh category list or display a success message
-    } catch (error) {
-      console.error("카테고리 삭제 실패", error);
-    }
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setCategoryData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setCategoryData((prev) => ({
-        ...prev,
-        image: e.target.files![0],
-      }));
-    }
+  const handleCloseModal = () => {
+    setSelectedSpot(null);
   };
 
   return (
     <div>
       <h2>스팟 신청 관리</h2>
       <Table>
-        <thead>
+        <Thead>
           <tr>
-            <th>신청 ID</th>
-            <th>이름</th>
-            <th>위치</th>
-            <th>관리</th>
+            <Th>신청자</Th>
+            <Th>날짜</Th>
+            <Th>이름</Th>
+            <Th>주소</Th>
+            <Th>관리</Th>
           </tr>
-        </thead>
+        </Thead>
         <tbody>
           {spotRequests.map((spot) => (
-            <tr key={spot.id}>
-              <td>{spot.id}</td>
-              <td>{spot.name}</td>
-              <td>{spot.location}</td>
-              <td>
+            <tr key={spot.spotApplyId}>
+              <Td>{spot.spotApplyId}</Td>
+              <Td>{new Date(spot.createdDateTime).toLocaleDateString()}</Td>
+              <Td>{spot.name}</Td>
+              <Td>{spot.address}</Td>
+              <Td>
                 <Button
                   color="#28a745"
-                  onClick={() => handleApproveSpot(spot.id)}
+                  onClick={() => handleApproveSpot(spot.spotApplyId)}
                 >
                   승인
                 </Button>
                 <Button
                   color="#dc3545"
-                  onClick={() => handleRejectSpot(spot.id)}
+                  onClick={() => handleRejectSpot(spot.spotApplyId)}
                 >
                   거절
                 </Button>
-              </td>
+                <Button color="#007bff" onClick={() => handleOpenModal(spot)}>
+                  자세히 보기
+                </Button>
+              </Td>
             </tr>
           ))}
         </tbody>
@@ -190,43 +177,45 @@ const SpotRequestManagement: React.FC = () => {
         onPageChange={setCurrentPage}
       />
 
-      {/* Add/Edit Category Form */}
-      <div>
-        <h3>{categoryData ? "카테고리 수정" : "카테고리 추가"}</h3>
-        <input
-          type="text"
-          name="name"
-          value={categoryData.name}
-          placeholder="카테고리 이름"
-          onChange={handleInputChange}
-        />
-        <select
-          name="categoryMajorType"
-          value={categoryData.categoryMajorType}
-          onChange={handleInputChange}
-        >
-          <option value="PERSON">PERSON</option>
-          <option value="PLACE">PLACE</option>
-        </select>
-        <input type="file" name="image" onChange={handleFileChange} />
-        <Button
-          onClick={() =>
-            categoryData
-              ? handleEditCategory(1 /* Replace with actual categoryId */)
-              : handleAddCategory()
-          }
-        >
-          {categoryData ? "카테고리 수정" : "카테고리 추가"}
-        </Button>
-        <Button
-          color="#dc3545"
-          onClick={() =>
-            handleDeleteCategory(1 /* Replace with actual categoryId */)
-          }
-        >
-          카테고리 삭제
-        </Button>
-      </div>
+      {selectedSpot && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h2>{selectedSpot.name}</h2>
+            <p>
+              <strong>주소:</strong> {selectedSpot.address}
+            </p>
+            <p>
+              <strong>카테고리:</strong>
+            </p>
+            <ul>
+              {selectedSpot.categoryDataList.map((category) => (
+                <li key={category.categoryId}>{category.name}</li>
+              ))}
+            </ul>
+            <p>
+              <strong>해시태그:</strong> {selectedSpot.hashtags.join(", ")}
+            </p>
+            <p>
+              <strong>좌표:</strong> X: {selectedSpot.pointX}, Y:{" "}
+              {selectedSpot.pointY}
+            </p>
+            {selectedSpot.imagePaths.length > 0 && (
+              <div>
+                <strong>이미지:</strong>
+                {selectedSpot.imagePaths.map((imagePath, index) => (
+                  <img
+                    key={index}
+                    src={imagePath}
+                    alt="Spot"
+                    style={{ width: "100px", marginRight: "10px" }}
+                  />
+                ))}
+              </div>
+            )}
+            <Button onClick={handleCloseModal}>닫기</Button>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </div>
   );
 };

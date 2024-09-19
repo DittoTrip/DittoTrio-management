@@ -30,7 +30,6 @@ const SpotSearch = ({ selectedSpot, setSelectedSpot }: Props) => {
 
   console.log(spotList);
 
-  // 검색어 변경 시 카테고리 검색
   useEffect(() => {
     if (searchWord) {
       const fetchSpots = async () => {
@@ -50,12 +49,10 @@ const SpotSearch = ({ selectedSpot, setSelectedSpot }: Props) => {
     }
   }, [searchWord]);
 
-  // 입력값 처리
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchWord(event.target.value);
   };
 
-  // 카테고리 선택 처리
   const handlespotSelect = (spot: SpotData) => {
     if (!selectedSpot.some((selected) => selected.spotId === spot.spotId)) {
       const newSelectedspot = [...selectedSpot, spot];
@@ -69,7 +66,6 @@ const SpotSearch = ({ selectedSpot, setSelectedSpot }: Props) => {
       setSpotList([]);
     }
   };
-  // 선택된 카테고리 삭제 처리
   const handleRemovespot = (spotId: number) => {
     const newSelectedspot = selectedSpot.filter(
       (spot) => spot.spotId !== spotId
