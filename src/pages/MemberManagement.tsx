@@ -146,7 +146,7 @@ const MemberManagement: React.FC = () => {
 
   const fetchMembers = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/user/list/search/admin?query=&page=${page}&size=10`,
+      `https://dittotrip.site/user/list/search/admin?query=&page=${page}&size=10`,
       {
         headers: {
           Authorization: `${token}`,
@@ -159,7 +159,7 @@ const MemberManagement: React.FC = () => {
 
   const handleDeleteMember = async (member: UserData) => {
     const response = await axios.put(
-      `http://dittotrip.site/user/${member.userId}`,
+      `https://dittotrip.site/user/${member.userId}`,
       {
         headers: {
           Authorization: `${token}`,

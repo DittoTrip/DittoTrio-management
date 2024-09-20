@@ -15,7 +15,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "styled-components": "^6.1.13"
+    "styled-components": "^6.1.13",
+    "vercel": "^37.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -30,5 +31,6 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
-  }
+  },
+  "proxy": "https://dittotrip.site"
 }

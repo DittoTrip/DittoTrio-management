@@ -84,7 +84,7 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://dittotrip.site/auth/login", {
+      const response = await axios.post("https://dittotrip.site/auth/login", {
         email,
         password,
       });

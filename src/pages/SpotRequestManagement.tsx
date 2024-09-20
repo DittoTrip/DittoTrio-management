@@ -88,7 +88,9 @@ const SpotRequestManagement: React.FC = () => {
   const [spotRequests, setSpotRequests] = useState<SpotRequest[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [selectedSpot, setSelectedSpot] = useState<SpotRequest | null>(null); // 선택된 스팟 신청
+  const [selectedSpot, setSelectedSpot] = useState<SpotRequest | null>(null);
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchSpotRequests(currentPage);
@@ -96,7 +98,7 @@ const SpotRequestManagement: React.FC = () => {
 
   const fetchSpotRequests = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/spot/apply/list?page=${page}`
+      `https://dittotrip.site/spot/apply/list?page=${page}`
     );
     setSpotRequests(response.data.spotApplyDataList);
     setTotalPages(response.data.totalPages);
@@ -104,7 +106,12 @@ const SpotRequestManagement: React.FC = () => {
 
   const handleApproveSpot = async (spotApplyId: number) => {
     const response = await axios.post(
-      `http://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=true`
+      `https://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=true`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
     );
     if (response.status == 200) {
       alert("승인되었습니다.");
@@ -114,7 +121,12 @@ const SpotRequestManagement: React.FC = () => {
 
   const handleRejectSpot = async (spotApplyId: number) => {
     const response = await axios.post(
-      `http://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=false`
+      `https://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=false`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
     );
     if (response.status == 200) {
       alert("거절되었습니다.");

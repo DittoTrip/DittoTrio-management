@@ -115,13 +115,13 @@ const UserDetail: React.FC = () => {
   }, [currentDittoPage]);
 
   const fetchUserInfo = async () => {
-    const response = await axios.get(`http://dittotrip.site/user/${id}`);
+    const response = await axios.get(`https://dittotrip.site/user/${id}`);
     setUserInfo(response.data.userDataForAdmin);
   };
 
   const fetchReviews = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/user/${id}/review/list?page=${page}&size=3`
+      `https://dittotrip.site/user/${id}/review/list?page=${page}&size=3`
     );
     setReviews(response.data.contentDataList);
     setTotalReviewPages(response.data.totalPages);
@@ -129,7 +129,7 @@ const UserDetail: React.FC = () => {
 
   const fetchDittos = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/user/${id}/ditto/list?page=${page}&size=`
+      `https://dittotrip.site/user/${id}/ditto/list?page=${page}&size=`
     );
 
     setDittos(response.data.contentDataList);
@@ -140,7 +140,7 @@ const UserDetail: React.FC = () => {
     <Container>
       <Section>
         <h2>회원 정보</h2>
-        {userInfo && userInfo.userProfileData && (
+        {userInfo && userInfo?.userProfileData.itemSkin && (
           <UserProfileImage
             skin={userInfo.userProfileData.itemSkin.imagePath}
             hair={userInfo.userProfileData.itemHair.imagePath}
@@ -184,7 +184,7 @@ const UserDetail: React.FC = () => {
                     <Td>{userInfo.email}</Td>
                   </tr>
                   <tr>
-                    <Th>등급</Th>
+                    <Th>상태</Th>
                     <Td>{userInfo.userStatus}</Td>
                   </tr>
                   <tr>

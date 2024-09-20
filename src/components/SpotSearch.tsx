@@ -35,7 +35,7 @@ const SpotSearch = ({ selectedSpot, setSelectedSpot }: Props) => {
       const fetchSpots = async () => {
         try {
           const result = await axios.get(
-            `http://dittotrip.site/spot/list/search?query=${searchWord}`
+            `https://dittotrip.site/spot/list/search?query=${searchWord}`
           );
           console.log(result);
           setSpotList(result.data.spotDataList);

@@ -7,6 +7,7 @@ import SpotSearch, { SpotData } from "../components/SpotSearch";
 import { gray20, gray40, gray60 } from "../style/color";
 import Pagination from "../components/Pagination";
 
+// 카테고리 인터페이스 정의
 export interface Category {
   categoryId: number;
   name: string;
@@ -15,6 +16,8 @@ export interface Category {
   hashtags: string[];
   spotList: SpotData[];
   totalPages: number;
+  majorType: MajorType;
+  subType: SubType;
 }
 
 export type SubType =
@@ -27,10 +30,10 @@ export type SubType =
 
 export type MajorType = "CONTENT" | "PERSON";
 
+// Styled components
 const Table = styled.table`
   flex: 1;
   width: 75vw;
-
   border-collapse: separate;
   border-spacing: 0;
   margin-bottom: 20px;
@@ -38,17 +41,17 @@ const Table = styled.table`
 
 const Thead = styled.thead`
   background-color: #f2f2f2;
-  border-radius: 10px; /* Rounded corners */
+  border-radius: 10px;
 `;
 
 const Th = styled.th`
   padding: 8px;
   text-align: left;
   &:first-child {
-    border-top-left-radius: 10px; /* Left top corner */
+    border-top-left-radius: 10px;
   }
   &:last-child {
-    border-top-right-radius: 10px; /* Right top corner */
+    border-top-right-radius: 10px;
   }
 `;
 
@@ -107,15 +110,6 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 400px;
   max-width: 100%;
-
-  .sub-title {
-    display: inline-block;
-    width: 80px;
-    font-weight: bold;
-  }
-  .select-box {
-    margin-bottom: 10px;
-  }
 `;
 
 const ModalTitle = styled.h2`
@@ -130,12 +124,13 @@ const ModalActions = styled.div`
 
 const CategoryManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [newCategory, setNewCategory] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
   const [categoryModifyReq, setCategoryModifyReq] = useState({
     name: "",
     categoryMajorType: "PERSON" as MajorType,
@@ -144,10 +139,9 @@ const CategoryManagement: React.FC = () => {
     spotIds: [0],
   });
 
-  const [selectedSpot, setSelectedSpot] = useState<SpotData[]>([]);
-
-  // 태그
   const [tags, setTags] = useState<string[]>([]);
+  const [selectedSpot, setSelectedSpot] = useState<SpotData[]>([]);
+  const [categoryImage, setCategoryImage] = useState<File | null>(null);
 
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -168,10 +162,10 @@ const CategoryManagement: React.FC = () => {
 
   const fetchCategories = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/category/list/search/typeless?query=&page=${page}&size=10`,
+      `https://dittotrip.site/category/list/search/typeless?query=&page=${page}&size=10`,
       {
         headers: {
-          Authorization: `${token}`, // Add the Authorization header
+          Authorization: `${token}`,
         },
       }
     );
@@ -179,56 +173,134 @@ const CategoryManagement: React.FC = () => {
     setTotalPages(response.data.totalPages);
   };
 
+  // 카테고리 추가 핸들러
   const handleAddCategory = async () => {
-    await axios.post("/api/categories", { name: newCategory });
-    setNewCategory("");
-    fetchCategories(currentPage);
+    const formData = new FormData();
+
+    formData.append(
+      "categorySaveReq",
+      new Blob(
+        [
+          JSON.stringify({
+            name: categoryModifyReq.name,
+            categoryMajorType: categoryModifyReq.categoryMajorType,
+            categorySubType: categoryModifyReq.categorySubType,
+            hashtagNames: tags,
+            spotIds: selectedSpot.map((spot) => spot.spotId),
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (categoryImage) {
+      formData.append("image", categoryImage);
+    }
+
+    try {
+      await axios.post("https://dittotrip.site/category", formData, {
+        headers: {
+          Authorization: `${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setTags([]);
+      setSelectedSpot([]);
+      setCategoryImage(null);
+      setIsAddModalOpen(false);
+      fetchCategories(currentPage);
+    } catch (error) {
+      console.error("카테고리 추가 실패", error);
+    }
+  };
+
+  // 이미지 업로드 핸들러
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setCategoryImage(e.target.files[0]);
+    }
   };
 
   const handleDeleteCategory = async (categoryId: number) => {
-    await axios.delete(`http://dittotrip.site/category/${categoryId}`, {
-      headers: {
-        Authorization: `${token}`, // Add the Authorization header
-      },
-    });
+    const res = await axios.delete(
+      `https://dittotrip.site/category/${categoryId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+    if (res.status == 200) {
+      alert("삭제되었습니다.");
+    }
     setIsDeleteModalOpen(false);
     fetchCategories(currentPage);
   };
 
   const handleEditCategory = async () => {
     if (selectedCategory) {
-      await axios.put(`/api/categories/${selectedCategory.categoryId}`, {
-        categoryModifyReq,
-        image: "string",
-      });
-      setIsEditModalOpen(false);
-      setCurrentPage(0);
-      fetchCategories(0);
-    }
-  };
+      const formData = new FormData();
 
-  const openDeleteModal = (category: Category) => {
-    setSelectedCategory(category);
-    setIsDeleteModalOpen(true);
+      formData.append(
+        "categoryModifyReq",
+        new Blob(
+          [
+            JSON.stringify({
+              name: categoryModifyReq.name,
+              categoryMajorType: categoryModifyReq.categoryMajorType,
+              categorySubType: categoryModifyReq.categorySubType,
+              hashtagNames: tags,
+              spotIds: selectedSpot.map((spot) => spot.spotId),
+            }),
+          ],
+          { type: "application/json" }
+        )
+      );
+
+      if (categoryImage) {
+        formData.append("image", categoryImage);
+      }
+
+      await axios.put(
+        `/api/categories/${selectedCategory.categoryId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setIsEditModalOpen(false);
+      fetchCategories(currentPage);
+    }
   };
 
   const openEditModal = (category: Category) => {
     setSelectedCategory(category);
     setCategoryModifyReq({
       name: category.name,
-      categoryMajorType: "PERSON",
-      categorySubType: "PERSON_SINGER",
+      categoryMajorType: category.majorType,
+      categorySubType: category.subType,
       hashtagNames: category.hashtags,
-      spotIds: [0], // 필요한 경우 스팟 ID 리스트를 변경
+      spotIds: category.spotList.map((spot) => spot.spotId),
     });
+    setTags(category.hashtags);
+    setSelectedSpot(category.spotList);
     setIsEditModalOpen(true);
+  };
+
+  const handleDeleteClick = (category: Category) => {
+    setSelectedCategory(category);
+    setIsDeleteModalOpen(true);
   };
 
   return (
     <div style={{ width: "100%" }}>
       <h2>카테고리 관리</h2>
 
-      <Button onClick={handleAddCategory}>추가</Button>
+      <Button onClick={() => setIsAddModalOpen(true)}>추가</Button>
 
       <Table>
         <Thead>
@@ -247,11 +319,13 @@ const CategoryManagement: React.FC = () => {
               <Td>{category.categoryId}</Td>
               <Td>{category.name}</Td>
               <Td>{/* 분류 표시 */}</Td>
-              <Td>{/* 스팟 개수 */}</Td>
+              <Td>{/* 분류 표시 */}</Td>
               <Td>{/* 등록일자 */}</Td>
               <Td>
                 <Button onClick={() => openEditModal(category)}>수정</Button>
-                <Button onClick={() => openDeleteModal(category)}>삭제</Button>
+                <Button onClick={() => handleDeleteClick(category)}>
+                  삭제
+                </Button>
               </Td>
             </tr>
           ))}
@@ -264,12 +338,13 @@ const CategoryManagement: React.FC = () => {
         onPageChange={setCurrentPage}
       />
 
-      {/* 삭제 확인 모달 */}
       {isDeleteModalOpen && selectedCategory && (
         <ModalOverlay>
           <ModalContent>
-            <ModalTitle>카테고리 삭제</ModalTitle>
-            <p>정말로 "{selectedCategory.name}" 카테고리를 삭제하시겠습니까?</p>
+            <ModalTitle>영구정지</ModalTitle>
+            <p>
+              정말로 "{selectedCategory?.name} "카테고리를 삭제하시겠습니까?
+            </p>
             <ModalActions>
               <Button onClick={() => setIsDeleteModalOpen(false)}>취소</Button>
               <Button
@@ -284,14 +359,13 @@ const CategoryManagement: React.FC = () => {
         </ModalOverlay>
       )}
 
-      {/* 수정 모달 */}
-      {isEditModalOpen && selectedCategory && (
+      {isAddModalOpen && (
         <ModalOverlay>
           <ModalContent>
-            <ModalTitle>카테고리 수정</ModalTitle>
+            <ModalTitle>카테고리 추가</ModalTitle>
             <div className="select-box">
               <label>
-                <div className="sub-title">{"이름 "}</div>
+                <div className="sub-title">이름</div>
                 <Input
                   type="text"
                   value={categoryModifyReq.name}
@@ -306,7 +380,7 @@ const CategoryManagement: React.FC = () => {
             </div>
             <div className="select-box">
               <label>
-                <div className="sub-title">{"주요 분류"}</div>
+                <div className="sub-title">주요 분류</div>
                 <Select
                   value={categoryModifyReq.categoryMajorType}
                   onChange={(e) =>
@@ -364,16 +438,120 @@ const CategoryManagement: React.FC = () => {
             <div className="select-box">
               <label>
                 <div className="sub-title">관련 Spot</div>
-
                 <SpotSearch
                   selectedSpot={selectedSpot}
                   setSelectedSpot={setSelectedSpot}
                 />
               </label>
             </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">이미지 업로드</div>
+                <Input type="file" onChange={handleFileChange} />
+              </label>
+            </div>
             <ModalActions>
-              <Button onClick={() => setIsEditModalOpen(false)}>취소</Button>
+              <Button onClick={() => handleAddCategory()}>추가</Button>
+              <Button onClick={() => setIsAddModalOpen(false)}>취소</Button>
+            </ModalActions>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {isEditModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>카테고리 수정</ModalTitle>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">이름</div>
+                <Input
+                  type="text"
+                  value={categoryModifyReq.name}
+                  onChange={(e) =>
+                    setCategoryModifyReq({
+                      ...categoryModifyReq,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </label>
+            </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">주요 분류</div>
+                <Select
+                  value={categoryModifyReq.categoryMajorType}
+                  onChange={(e) =>
+                    setCategoryModifyReq({
+                      ...categoryModifyReq,
+                      categoryMajorType: e.target.value as MajorType,
+                    })
+                  }
+                >
+                  <option value="PERSON">PERSON</option>
+                  <option value="CONTENT">CONTENT</option>
+                </Select>
+              </label>
+            </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">서브 분류</div>
+                <Select
+                  value={categoryModifyReq.categorySubType}
+                  onChange={(e) =>
+                    setCategoryModifyReq({
+                      ...categoryModifyReq,
+                      categorySubType: e.target.value as SubType,
+                    })
+                  }
+                >
+                  {categoryModifyReq.categoryMajorType === "PERSON" ? (
+                    <>
+                      <option value="PERSON_ACTOR">PERSON_ACTOR</option>
+                      <option value="PERSON_SINGER">PERSON_SINGER</option>
+                      <option value="PERSON_COMEDIAN">PERSON_COMEDIAN</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="CONTENT_MOVIE">CONTENT_MOVIE</option>
+                      <option value="CONTENT_DRAMA">CONTENT_DRAMA</option>
+                      <option value="CONTENT_ENTERTAINMENT">
+                        CONTENT_ENTERTAINMENT
+                      </option>
+                    </>
+                  )}
+                </Select>
+              </label>
+            </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">해시태그</div>
+                <TagInput
+                  tags={tags}
+                  handleAddTag={handleAddTag}
+                  handleDeleteTag={handleDeleteTag}
+                />
+              </label>
+            </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">관련 Spot</div>
+                <SpotSearch
+                  selectedSpot={selectedSpot}
+                  setSelectedSpot={setSelectedSpot}
+                />
+              </label>
+            </div>
+            <div className="select-box">
+              <label>
+                <div className="sub-title">이미지 업로드</div>
+                <Input type="file" onChange={handleFileChange} />
+              </label>
+            </div>
+            <ModalActions>
               <Button onClick={handleEditCategory}>수정</Button>
+              <Button onClick={() => setIsEditModalOpen(false)}>취소</Button>
             </ModalActions>
           </ModalContent>
         </ModalOverlay>

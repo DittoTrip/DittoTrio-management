@@ -179,7 +179,7 @@ const ReportManagement: React.FC = () => {
 
   const fetchReports = async (page: number) => {
     const response = await axios.get(
-      `http://dittotrip.site/report/list?page=${page}&query=&size=10`
+      `https://dittotrip.site/report/list?page=${page}&query=&size=10`
     );
     setReports(response.data.reportDataList);
     setTotalPages(response.data.totalPage);
@@ -198,7 +198,7 @@ const ReportManagement: React.FC = () => {
         suspensionDays: shouldPermanentlyBan ? 0 : suspensionDays,
       };
       const res = await axios.post(
-        `http://dittotrip.site/report/${selectedReportId}`,
+        `https://dittotrip.site/report/${selectedReportId}`,
         data
       );
       if (res.status == 200) {
@@ -211,7 +211,7 @@ const ReportManagement: React.FC = () => {
     }
   };
 
-  const dittoURL = "https://dittotrip.site"; // 배포 url
+  const dittoURL = "httpss://dittotrip.site"; // 배포 url
 
   return (
     <div>
