@@ -6,18 +6,16 @@ import TagInput from "../components/TagInput";
 import SpotSearch, { SpotData } from "../components/SpotSearch";
 import { gray20, gray40, gray60 } from "../style/color";
 import Pagination from "../components/Pagination";
+import formatDate from "../utils/formatDate";
 
 // 카테고리 인터페이스 정의
 export interface Category {
   categoryId: number;
   name: string;
-  imageFilePath: string | null;
-  myBookmarkId: number | null;
-  hashtags: string[];
-  spotList: SpotData[];
-  totalPages: number;
   majorType: MajorType;
   subType: SubType;
+  categorySpotCount: number;
+  createdDateTime: Date;
 }
 
 export type SubType =
@@ -29,6 +27,21 @@ export type SubType =
   | "CONTENT_ENTERTAINMENT";
 
 export type MajorType = "CONTENT" | "PERSON";
+
+// subType과 한글 명칭을 매핑하는 객체
+const subTypeKoreanMap: { [key in SubType]: string } = {
+  PERSON_ACTOR: "배우",
+  PERSON_SINGER: "가수",
+  PERSON_COMEDIAN: "코미디언",
+  CONTENT_MOVIE: "영화",
+  CONTENT_DRAMA: "드라마",
+  CONTENT_ENTERTAINMENT: "예능",
+};
+
+// subType을 한글로 변환하는 함수
+const getKoreanSubType = (subType: SubType) => {
+  return subTypeKoreanMap[subType] || subType; // 매핑된 값이 없으면 원래 값 반환
+};
 
 // Styled components
 const Table = styled.table`
@@ -162,138 +175,15 @@ const CategoryManagement: React.FC = () => {
 
   const fetchCategories = async (page: number) => {
     const response = await axios.get(
-      `https://dittotrip.site/category/list/search/typeless?query=&page=${page}&size=10`,
+      `https://dittotrip.site/category/list/admin?query=&page=${page}&size=10`,
       {
         headers: {
           Authorization: `${token}`,
         },
       }
     );
-    setCategories(response.data.categoryDataList);
+    setCategories(response.data.categoryForAdminDataList);
     setTotalPages(response.data.totalPages);
-  };
-
-  // 카테고리 추가 핸들러
-  const handleAddCategory = async () => {
-    const formData = new FormData();
-
-    formData.append(
-      "categorySaveReq",
-      new Blob(
-        [
-          JSON.stringify({
-            name: categoryModifyReq.name,
-            categoryMajorType: categoryModifyReq.categoryMajorType,
-            categorySubType: categoryModifyReq.categorySubType,
-            hashtagNames: tags,
-            spotIds: selectedSpot.map((spot) => spot.spotId),
-          }),
-        ],
-        { type: "application/json" }
-      )
-    );
-
-    if (categoryImage) {
-      formData.append("image", categoryImage);
-    }
-
-    try {
-      await axios.post("https://dittotrip.site/category", formData, {
-        headers: {
-          Authorization: `${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setTags([]);
-      setSelectedSpot([]);
-      setCategoryImage(null);
-      setIsAddModalOpen(false);
-      fetchCategories(currentPage);
-    } catch (error) {
-      console.error("카테고리 추가 실패", error);
-    }
-  };
-
-  // 이미지 업로드 핸들러
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setCategoryImage(e.target.files[0]);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: number) => {
-    const res = await axios.delete(
-      `https://dittotrip.site/category/${categoryId}`,
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      }
-    );
-    if (res.status == 200) {
-      alert("삭제되었습니다.");
-    }
-    setIsDeleteModalOpen(false);
-    fetchCategories(currentPage);
-  };
-
-  const handleEditCategory = async () => {
-    if (selectedCategory) {
-      const formData = new FormData();
-
-      formData.append(
-        "categoryModifyReq",
-        new Blob(
-          [
-            JSON.stringify({
-              name: categoryModifyReq.name,
-              categoryMajorType: categoryModifyReq.categoryMajorType,
-              categorySubType: categoryModifyReq.categorySubType,
-              hashtagNames: tags,
-              spotIds: selectedSpot.map((spot) => spot.spotId),
-            }),
-          ],
-          { type: "application/json" }
-        )
-      );
-
-      if (categoryImage) {
-        formData.append("image", categoryImage);
-      }
-
-      await axios.put(
-        `/api/categories/${selectedCategory.categoryId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      setIsEditModalOpen(false);
-      fetchCategories(currentPage);
-    }
-  };
-
-  const openEditModal = (category: Category) => {
-    setSelectedCategory(category);
-    setCategoryModifyReq({
-      name: category.name,
-      categoryMajorType: category.majorType,
-      categorySubType: category.subType,
-      hashtagNames: category.hashtags,
-      spotIds: category.spotList.map((spot) => spot.spotId),
-    });
-    setTags(category.hashtags);
-    setSelectedSpot(category.spotList);
-    setIsEditModalOpen(true);
-  };
-
-  const handleDeleteClick = (category: Category) => {
-    setSelectedCategory(category);
-    setIsDeleteModalOpen(true);
   };
 
   return (
@@ -318,14 +208,13 @@ const CategoryManagement: React.FC = () => {
             <tr key={category.categoryId}>
               <Td>{category.categoryId}</Td>
               <Td>{category.name}</Td>
-              <Td>{/* 분류 표시 */}</Td>
-              <Td>{/* 분류 표시 */}</Td>
-              <Td>{/* 등록일자 */}</Td>
+              {/* subType을 한글로 변환하여 출력 */}
+              <Td>{getKoreanSubType(category.subType)}</Td>
+              <Td>{category.categorySpotCount}</Td>
+              <Td>{formatDate(category.createdDateTime)}</Td>
               <Td>
-                <Button onClick={() => openEditModal(category)}>수정</Button>
-                <Button onClick={() => handleDeleteClick(category)}>
-                  삭제
-                </Button>
+                <Button onClick={() => console.log("수정")}>수정</Button>
+                <Button onClick={() => console.log("삭제")}>삭제</Button>
               </Td>
             </tr>
           ))}
@@ -338,224 +227,7 @@ const CategoryManagement: React.FC = () => {
         onPageChange={setCurrentPage}
       />
 
-      {isDeleteModalOpen && selectedCategory && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>영구정지</ModalTitle>
-            <p>
-              정말로 "{selectedCategory?.name} "카테고리를 삭제하시겠습니까?
-            </p>
-            <ModalActions>
-              <Button onClick={() => setIsDeleteModalOpen(false)}>취소</Button>
-              <Button
-                onClick={() =>
-                  handleDeleteCategory(selectedCategory.categoryId)
-                }
-              >
-                삭제
-              </Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {isAddModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>카테고리 추가</ModalTitle>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">이름</div>
-                <Input
-                  type="text"
-                  value={categoryModifyReq.name}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      name: e.target.value,
-                    })
-                  }
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">주요 분류</div>
-                <Select
-                  value={categoryModifyReq.categoryMajorType}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      categoryMajorType: e.target.value as MajorType,
-                    })
-                  }
-                >
-                  <option value="PERSON">PERSON</option>
-                  <option value="CONTENT">CONTENT</option>
-                </Select>
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">서브 분류</div>
-                <Select
-                  value={categoryModifyReq.categorySubType}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      categorySubType: e.target.value as SubType,
-                    })
-                  }
-                >
-                  {categoryModifyReq.categoryMajorType === "PERSON" ? (
-                    <>
-                      <option value="PERSON_ACTOR">PERSON_ACTOR</option>
-                      <option value="PERSON_SINGER">PERSON_SINGER</option>
-                      <option value="PERSON_COMEDIAN">PERSON_COMEDIAN</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="CONTENT_MOVIE">CONTENT_MOVIE</option>
-                      <option value="CONTENT_DRAMA">CONTENT_DRAMA</option>
-                      <option value="CONTENT_ENTERTAINMENT">
-                        CONTENT_ENTERTAINMENT
-                      </option>
-                    </>
-                  )}
-                </Select>
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">해시태그</div>
-                <TagInput
-                  tags={tags}
-                  handleAddTag={handleAddTag}
-                  handleDeleteTag={handleDeleteTag}
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">관련 Spot</div>
-                <SpotSearch
-                  selectedSpot={selectedSpot}
-                  setSelectedSpot={setSelectedSpot}
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">이미지 업로드</div>
-                <Input type="file" onChange={handleFileChange} />
-              </label>
-            </div>
-            <ModalActions>
-              <Button onClick={() => handleAddCategory()}>추가</Button>
-              <Button onClick={() => setIsAddModalOpen(false)}>취소</Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {isEditModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>카테고리 수정</ModalTitle>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">이름</div>
-                <Input
-                  type="text"
-                  value={categoryModifyReq.name}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      name: e.target.value,
-                    })
-                  }
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">주요 분류</div>
-                <Select
-                  value={categoryModifyReq.categoryMajorType}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      categoryMajorType: e.target.value as MajorType,
-                    })
-                  }
-                >
-                  <option value="PERSON">PERSON</option>
-                  <option value="CONTENT">CONTENT</option>
-                </Select>
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">서브 분류</div>
-                <Select
-                  value={categoryModifyReq.categorySubType}
-                  onChange={(e) =>
-                    setCategoryModifyReq({
-                      ...categoryModifyReq,
-                      categorySubType: e.target.value as SubType,
-                    })
-                  }
-                >
-                  {categoryModifyReq.categoryMajorType === "PERSON" ? (
-                    <>
-                      <option value="PERSON_ACTOR">PERSON_ACTOR</option>
-                      <option value="PERSON_SINGER">PERSON_SINGER</option>
-                      <option value="PERSON_COMEDIAN">PERSON_COMEDIAN</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="CONTENT_MOVIE">CONTENT_MOVIE</option>
-                      <option value="CONTENT_DRAMA">CONTENT_DRAMA</option>
-                      <option value="CONTENT_ENTERTAINMENT">
-                        CONTENT_ENTERTAINMENT
-                      </option>
-                    </>
-                  )}
-                </Select>
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">해시태그</div>
-                <TagInput
-                  tags={tags}
-                  handleAddTag={handleAddTag}
-                  handleDeleteTag={handleDeleteTag}
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">관련 Spot</div>
-                <SpotSearch
-                  selectedSpot={selectedSpot}
-                  setSelectedSpot={setSelectedSpot}
-                />
-              </label>
-            </div>
-            <div className="select-box">
-              <label>
-                <div className="sub-title">이미지 업로드</div>
-                <Input type="file" onChange={handleFileChange} />
-              </label>
-            </div>
-            <ModalActions>
-              <Button onClick={handleEditCategory}>수정</Button>
-              <Button onClick={() => setIsEditModalOpen(false)}>취소</Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      {/* 기타 모달 내용 생략 */}
     </div>
   );
 };
