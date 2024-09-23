@@ -104,7 +104,22 @@ const SpotRequestManagement: React.FC = () => {
     setTotalPages(response.data.totalPages);
   };
 
+  const handleRemoveApply = async (spotApplyId: number) => {
+    const response = await axios.delete(
+      `https://dittotrip.site/spot/apply/${spotApplyId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    fetchSpotRequests(currentPage);
+  };
+
   const handleApproveSpot = async (spotApplyId: number) => {
+    handleRemoveApply(spotApplyId);
+
     const response = await axios.post(
       `https://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=true`,
       {
@@ -115,8 +130,8 @@ const SpotRequestManagement: React.FC = () => {
     );
     if (response.status == 200) {
       alert("승인되었습니다.");
+      handleRemoveApply(spotApplyId);
     }
-    fetchSpotRequests(currentPage);
   };
 
   const handleRejectSpot = async (spotApplyId: number) => {
@@ -130,8 +145,8 @@ const SpotRequestManagement: React.FC = () => {
     );
     if (response.status == 200) {
       alert("거절되었습니다.");
+      handleRemoveApply(spotApplyId);
     }
-    fetchSpotRequests(currentPage);
   };
 
   const handleOpenModal = (spotRequest: SpotRequest) => {

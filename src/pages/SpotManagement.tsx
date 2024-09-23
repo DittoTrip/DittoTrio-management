@@ -16,7 +16,8 @@ interface Spot {
 
 const Table = styled.table`
   flex: 1;
-  width: 1000px;
+  width: 75vw;
+
   border-collapse: separate;
   border-spacing: 0;
   margin-bottom: 20px;
@@ -40,6 +41,25 @@ const Th = styled.th`
 
 const Td = styled.td`
   padding: 8px;
+`;
+const AddButton = styled.button`
+  padding: 5px 10px;
+  background-color: ${gray40};
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 4px;
+  margin-bottom: 10px;
+
+  &:hover {
+    background-color: ${gray60};
+  }
+
+  &:disabled {
+    background-color: ${gray60};
+    cursor: not-allowed;
+  }
 `;
 
 const Button = styled.button`
@@ -121,7 +141,9 @@ const SpotManagement: React.FC = () => {
   };
 
   const handleDeleteSpot = async (spotId: number) => {
-    const response = await axios.delete(`/${spotId}`);
+    const response = await axios.delete(
+      `https://dittotrip.site/spot/${spotId}`
+    );
     if (response.status == 200) {
       alert("삭제되었습니다.");
     }
@@ -165,13 +187,14 @@ const SpotManagement: React.FC = () => {
     spotInfo.images.forEach((img) => formData.append("images", img));
 
     try {
-      await axios.post("https://dittotrip.site/spot/apply", formData, {
+      await axios.post("https://dittotrip.site/spot", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `${token}`,
         },
       });
       setIsAddModalOpen(false);
+      alert("스팟이 등록되었습니다.");
       fetchSpots(currentPage);
     } catch (error) {
       console.error("스팟 추가 실패", error);
@@ -199,7 +222,7 @@ const SpotManagement: React.FC = () => {
   return (
     <div>
       <h2>스팟 관리</h2>
-      <Button onClick={() => setIsAddModalOpen(true)}>추가</Button>
+      <AddButton onClick={() => setIsAddModalOpen(true)}>추가</AddButton>
       <Table>
         <Thead>
           <tr>
@@ -216,7 +239,7 @@ const SpotManagement: React.FC = () => {
               <Td>{spot.name}</Td>
               <Td>{spot.address}</Td>
               <Td>
-                <Button onClick={() => handleDeleteSpot(spot.spotApplyId)}>
+                <Button onClick={() => handleDeleteSpot(spot.spotId)}>
                   삭제
                 </Button>
               </Td>

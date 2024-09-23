@@ -54,7 +54,7 @@ export interface BadgeData {
 
 const Table = styled.table`
   flex: 1;
-  width: 1000px;
+  width: 75vw;
 
   border-collapse: separate;
   border-spacing: 0;

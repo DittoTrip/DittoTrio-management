@@ -36,7 +36,6 @@ const subTypeKoreanMap: { [key in SubType]: string } = {
   CONTENT_DRAMA: "드라마",
   CONTENT_ENTERTAINMENT: "예능",
 };
-// Styled components
 const Table = styled.table`
   flex: 1;
   width: 75vw;
@@ -72,6 +71,25 @@ const Input = styled.input`
   border-radius: 5px;
 `;
 
+const AddButton = styled.button`
+  padding: 5px 10px;
+  background-color: ${gray40};
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 4px;
+  margin-bottom: 10px;
+
+  &:hover {
+    background-color: ${gray60};
+  }
+
+  &:disabled {
+    background-color: ${gray60};
+    cursor: not-allowed;
+  }
+`;
 const Button = styled.button`
   padding: 5px 10px;
   background-color: ${gray20};
@@ -184,7 +202,7 @@ const CategoryManagement: React.FC = () => {
     const formData = new FormData();
 
     formData.append(
-      "categorySaveReq",
+      "saveReq",
       new Blob(
         [
           JSON.stringify({
@@ -215,6 +233,7 @@ const CategoryManagement: React.FC = () => {
       setCategoryImage(null);
       setIsAddModalOpen(false);
       fetchCategories(currentPage);
+      alert("카테고리가 추가되었습니다.");
     } catch (error) {
       console.error("카테고리 추가 실패", error);
     }
@@ -310,7 +329,7 @@ const CategoryManagement: React.FC = () => {
     <div style={{ width: "100%" }}>
       <h2>카테고리 관리</h2>
 
-      <Button onClick={() => setIsAddModalOpen(true)}>추가</Button>
+      <AddButton onClick={() => setIsAddModalOpen(true)}>추가</AddButton>
 
       <Table>
         <Thead>
