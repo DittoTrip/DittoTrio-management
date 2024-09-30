@@ -100,6 +100,7 @@ const SpotRequestManagement: React.FC = () => {
     const response = await axios.get(
       `https://dittotrip.site/spot/apply/list?page=${page}`
     );
+    console.log(response);
     setSpotRequests(response.data.spotApplyDataList);
     setTotalPages(response.data.totalPages);
   };
@@ -113,6 +114,8 @@ const SpotRequestManagement: React.FC = () => {
         },
       }
     );
+
+    console.log(response);
 
     fetchSpotRequests(currentPage);
   };

@@ -262,60 +262,6 @@ const CategoryManagement: React.FC = () => {
     fetchCategories(currentPage);
   };
 
-  const handleEditCategory = async () => {
-    if (selectedCategory) {
-      const formData = new FormData();
-
-      formData.append(
-        "categoryModifyReq",
-        new Blob(
-          [
-            JSON.stringify({
-              name: categoryModifyReq.name,
-              categoryMajorType: categoryModifyReq.categoryMajorType,
-              categorySubType: categoryModifyReq.categorySubType,
-              hashtagNames: tags,
-              spotIds: selectedSpot.map((spot) => spot.spotId),
-            }),
-          ],
-          { type: "application/json" }
-        )
-      );
-
-      if (categoryImage) {
-        formData.append("image", categoryImage);
-      }
-
-      await axios.put(
-        `/api/categories/${selectedCategory.categoryId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      setIsEditModalOpen(false);
-      fetchCategories(currentPage);
-    }
-  };
-
-  const openEditModal = (category: Category) => {
-    // setSelectedCategory(category);
-    // setCategoryModifyReq({
-    //   name: category.name,
-    //   categoryMajorType: category.majorType,
-    //   categorySubType: category.subType,
-    //   hashtagNames: category.hashtags,
-    //   spotIds: category.spotList.map((spot) => spot.spotId),
-    // });
-    // setTags(category.hashtags);
-    // setSelectedSpot(category.spotList);
-    // setIsEditModalOpen(true);
-  };
-
   const handleDeleteClick = (category: Category) => {
     setSelectedCategory(category);
     setIsDeleteModalOpen(true);
@@ -351,7 +297,6 @@ const CategoryManagement: React.FC = () => {
               <Td>{formatDate(category.createdDateTime)}</Td>
               <Td>{category.categorySpotCount}</Td>
               <Td>
-                <Button onClick={() => openEditModal(category)}>수정</Button>
                 <Button onClick={() => handleDeleteClick(category)}>
                   삭제
                 </Button>
@@ -579,7 +524,6 @@ const CategoryManagement: React.FC = () => {
               </label>
             </div>
             <ModalActions>
-              <Button onClick={handleEditCategory}>수정</Button>
               <Button onClick={() => setIsEditModalOpen(false)}>취소</Button>
             </ModalActions>
           </ModalContent>
