@@ -121,7 +121,7 @@ const SpotRequestManagement: React.FC = () => {
   };
 
   const handleApproveSpot = async (spotApplyId: number) => {
-    handleRemoveApply(spotApplyId);
+    // (spotApplyId);
 
     const response = await axios.post(
       `https://dittotrip.site/spot/apply/${spotApplyId}/handle?isApproval=true`,

@@ -160,7 +160,7 @@ const CategoryManagement: React.FC = () => {
     categoryMajorType: "PERSON" as MajorType,
     categorySubType: "PERSON_SINGER" as SubType,
     hashtagNames: [""],
-    spotIds: [0],
+    spotIds: [],
   });
 
   const [tags, setTags] = useState<string[]>([]);
@@ -232,6 +232,7 @@ const CategoryManagement: React.FC = () => {
       setSelectedSpot([]);
       setCategoryImage(null);
       setIsAddModalOpen(false);
+
       fetchCategories(currentPage);
       alert("카테고리가 추가되었습니다.");
     } catch (error) {
@@ -315,7 +316,7 @@ const CategoryManagement: React.FC = () => {
       {isDeleteModalOpen && selectedCategory && (
         <ModalOverlay>
           <ModalContent>
-            <ModalTitle>영구정지</ModalTitle>
+            <ModalTitle>삭제</ModalTitle>
             <p>
               정말로 "{selectedCategory?.name} "카테고리를 삭제하시겠습니까?
             </p>
