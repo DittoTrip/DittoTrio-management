@@ -44,6 +44,9 @@ const Sidebar: React.FC = () => {
     <SidebarContainer>
       <Title>관리자 메뉴</Title>
       <MenuList>
+        <MenuItem active={location.pathname === "/login"}>
+          <Link to="/login">로그인</Link>
+        </MenuItem>
         <MenuItem active={location.pathname === "/members"}>
           <Link to="/members">회원 관리</Link>
         </MenuItem>
@@ -58,6 +61,9 @@ const Sidebar: React.FC = () => {
         </MenuItem>
         <MenuItem active={location.pathname === "/spot-requests"}>
           <Link to="/spot-requests">스팟 신청 관리</Link>
+        </MenuItem>
+        <MenuItem active={location.pathname === "/quest"}>
+          <Link to="/quest">퀘스트 관리</Link>
         </MenuItem>
       </MenuList>
     </SidebarContainer>

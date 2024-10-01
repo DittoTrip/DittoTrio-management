@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import styled from "styled-components";
 import Sidebar from "./components/SlideBar";
 import UserDetail from "./pages/UserDetail";
+import QuestManagement from "./pages/QuestManagement";
 
 const Container = styled.div`
   display: flex;
@@ -75,6 +76,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <SpotRequestManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quest"
+              element={
+                <ProtectedRoute>
+                  <QuestManagement />
                 </ProtectedRoute>
               }
             />

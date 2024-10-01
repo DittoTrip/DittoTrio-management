@@ -234,6 +234,15 @@ const CategoryManagement: React.FC = () => {
       setIsAddModalOpen(false);
 
       fetchCategories(currentPage);
+
+      setCategoryModifyReq({
+        name: "",
+        categoryMajorType: "PERSON" as MajorType,
+        categorySubType: "PERSON_SINGER" as SubType,
+        hashtagNames: [],
+        spotIds: [],
+      });
+
       alert("카테고리가 추가되었습니다.");
     } catch (error) {
       console.error("카테고리 추가 실패", error);
