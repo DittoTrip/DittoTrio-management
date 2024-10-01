@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 interface Item {
@@ -105,7 +105,7 @@ const BadgeAndItemList = () => {
         {items &&
           items.map((item) => (
             <div
-              key={item.id}
+              key={item.rewardId}
               style={{
                 textAlign: "center",
                 border: "1px solid #ddd",

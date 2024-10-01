@@ -1,178 +1,147 @@
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BadgeAndItemList from "../components/BadgeAndItem";
+import styled from "styled-components";
 
-const QuestManagement = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+interface RewardData {
+  rewardId: number;
+  name: string;
+  imagePath: string;
+}
 
-  const onSubmit = async (data: any) => {
-    try {
-      const response = await axios.post("https://dittotrip.site/quest", data);
-      console.log("Quest registered:", response.data);
-    } catch (error) {
-      console.error("Error registering quest:", error);
-    }
-  };
+interface Quest {
+  questId: number;
+  title: string;
+  body: string;
+  conditionCount: number;
+  questActionType: string;
+  createdDateTime: string;
+  rewardExp: number;
+  rewardData: RewardData;
+}
+
+interface QuestListResponse {
+  questDataList: Quest[];
+  totalCount: number;
+}
+export const QuestContainer = styled.div`
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+export const QuestList = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 items per row */
+  gap: 20px;
+  list-style-type: none;
+  padding: 0;
+`;
+
+export const QuestItem = styled.li`
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
+export const QuestTitle = styled.h3`
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+`;
+
+export const QuestBody = styled.p`
+  font-size: 16px;
+  color: #555;
+  margin-top: 8px;
+`;
+
+export const QuestDetails = styled.div`
+  margin-top: 10px;
+  font-size: 14px;
+  color: #777;
+`;
+
+export const QuestImage = styled.img`
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 10px;
+`;
+
+export const Loading = styled.div`
+  text-align: center;
+  font-size: 18px;
+  color: #555;
+`;
+
+export const Error = styled.div`
+  color: red;
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+`;
+
+const QuestListPage: React.FC = () => {
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchQuests = async () => {
+      try {
+        const response = await axios.get<QuestListResponse>(
+          "https://dittotrip.site/quest/list/admin"
+        );
+        setQuests(response.data.questDataList);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch quests.");
+        setLoading(false);
+      }
+    };
+
+    fetchQuests();
+  }, []);
+
+  if (loading) {
+    return <Loading>Loading quests...</Loading>;
+  }
+
+  if (error) {
+    return <Error>{error}</Error>;
+  }
 
   return (
-    <>
-      <div
-        style={{
-          padding: "20px",
-          maxWidth: "600px",
-          margin: "0 auto",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          backgroundColor: "#f9f9f9",
-        }}
-      >
-        <h2 style={{ textAlign: "center" }}>Quest Registration</h2>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{ display: "flex", flexDirection: "column", gap: "15px" }}
-        >
-          <div>
-            <label htmlFor="title" style={{ fontWeight: "bold" }}>
-              Title:
-            </label>
-            <input
-              id="title"
-              {...register("title", { required: "Title is required" })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
+    <QuestContainer>
+      <h1>Quest List</h1>
+      <QuestList>
+        {quests.map((quest) => (
+          <QuestItem key={quest.questId}>
+            <QuestTitle>{quest.title}</QuestTitle>
+            <QuestBody>{quest.body}</QuestBody>
+            <QuestDetails>
+              <p>Condition Count: {quest.conditionCount}</p>
+              <p>Action Type: {quest.questActionType}</p>
+              <p>Reward Exp: {quest.rewardExp}</p>
+              <p>Reward Name: {quest.rewardData.name}</p>
+            </QuestDetails>
+            <QuestImage
+              src={quest.rewardData.imagePath}
+              alt={quest.rewardData.name}
             />
-            {errors.title && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <div>
-            <label htmlFor="body" style={{ fontWeight: "bold" }}>
-              Description:
-            </label>
-            <textarea
-              id="body"
-              {...register("body", { required: "Description is required" })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            {errors.body && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <div>
-            <label htmlFor="conditionCount" style={{ fontWeight: "bold" }}>
-              Condition Count:
-            </label>
-            <input
-              id="conditionCount"
-              type="number"
-              {...register("conditionCount", {
-                required: "Condition Count is required",
-                min: 0,
-              })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            {errors.conditionCount && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <div>
-            <label htmlFor="questActionType" style={{ fontWeight: "bold" }}>
-              Quest Action Type:
-            </label>
-            <select
-              id="questActionType"
-              {...register("questActionType", {
-                required: "Quest Action Type is required",
-              })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            >
-              <option value="VISIT">Visit</option>
-              <option value="REVIEW">Review</option>
-              <option value="DITTO">Ditto</option>
-              <option value="FOLLOWING">Following</option>
-              {/* Add more options as needed */}
-            </select>
-            {errors.questActionType && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <div>
-            <label htmlFor="rewardExp" style={{ fontWeight: "bold" }}>
-              Reward Experience:
-            </label>
-            <input
-              id="rewardExp"
-              type="number"
-              {...register("rewardExp", {
-                required: "Reward Experience is required",
-                min: 0,
-              })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            {errors.rewardExp && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <div>
-            <label htmlFor="rewardId" style={{ fontWeight: "bold" }}>
-              Reward ID:
-            </label>
-            <input
-              id="rewardId"
-              type="number"
-              {...register("rewardId", { required: "Reward ID is required" })}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            />
-            {errors.rewardId && <p style={{ color: "red" }}>필수</p>}
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              padding: "10px",
-              borderRadius: "5px",
-              border: "none",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Register Quest
-          </button>
-        </form>
-      </div>
-      <BadgeAndItemList />
-    </>
+          </QuestItem>
+        ))}
+      </QuestList>
+    </QuestContainer>
   );
 };
 
-export default QuestManagement;
+export default QuestListPage;

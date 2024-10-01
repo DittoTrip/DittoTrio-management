@@ -63,7 +63,10 @@ const Sidebar: React.FC = () => {
           <Link to="/spot-requests">스팟 신청 관리</Link>
         </MenuItem>
         <MenuItem active={location.pathname === "/quest"}>
-          <Link to="/quest">퀘스트 관리</Link>
+          <Link to="/quest">퀘스트 조회</Link>
+        </MenuItem>
+        <MenuItem active={location.pathname === "/quest/new"}>
+          <Link to="/quest/new">퀘스트 추가 / 보상 조회</Link>
         </MenuItem>
       </MenuList>
     </SidebarContainer>

@@ -10,7 +10,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import styled from "styled-components";
 import Sidebar from "./components/SlideBar";
 import UserDetail from "./pages/UserDetail";
-import QuestManagement from "./pages/QuestManagement";
+import QuestCreateManagement from "./pages/QuestCreateManagement.tsx";
+import QuestListPage from "./pages/QuestManagement.tsx";
 
 const Container = styled.div`
   display: flex;
@@ -80,10 +81,18 @@ const App: React.FC = () => {
               }
             />
             <Route
+              path="/quest/new"
+              element={
+                <ProtectedRoute>
+                  <QuestCreateManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/quest"
               element={
                 <ProtectedRoute>
-                  <QuestManagement />
+                  <QuestListPage />
                 </ProtectedRoute>
               }
             />
