@@ -133,7 +133,6 @@ const SpotRequestManagement: React.FC = () => {
     );
     if (response.status == 200) {
       alert("승인되었습니다.");
-      handleRemoveApply(spotApplyId);
     }
   };
 
@@ -148,7 +147,6 @@ const SpotRequestManagement: React.FC = () => {
     );
     if (response.status == 200) {
       alert("거절되었습니다.");
-      handleRemoveApply(spotApplyId);
     }
   };
 
