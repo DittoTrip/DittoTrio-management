@@ -122,6 +122,7 @@ const QuestCreateManagement = () => {
               <option value="REVIEW">Review</option>
               <option value="DITTO">Ditto</option>
               <option value="FOLLOWING">Following</option>
+              <option value="SPOT_APPLY">SPOT_APPLY</option>
               {/* Add more options as needed */}
             </select>
             {errors.questActionType && <p style={{ color: "red" }}>필수</p>}

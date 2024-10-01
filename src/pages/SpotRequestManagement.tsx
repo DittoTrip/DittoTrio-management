@@ -92,6 +92,7 @@ const SpotRequestManagement: React.FC = () => {
 
   const token = localStorage.getItem("token");
 
+
   useEffect(() => {
     fetchSpotRequests(currentPage);
   }, [currentPage]);
@@ -105,20 +106,20 @@ const SpotRequestManagement: React.FC = () => {
     setTotalPages(response.data.totalPages);
   };
 
-  const handleRemoveApply = async (spotApplyId: number) => {
-    const response = await axios.delete(
-      `https://dittotrip.site/spot/apply/${spotApplyId}`,
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      }
-    );
+  // const handleRemoveApply = async (spotApplyId: number) => {
+  //   const response = await axios.delete(
+  //     `https://dittotrip.site/spot/apply/${spotApplyId}`,
+  //     {
+  //       headers: {
+  //         Authorization: `${token}`,
+  //       },
+  //     }
+  //   );
 
-    console.log(response);
+  //   console.log(response);
 
-    fetchSpotRequests(currentPage);
-  };
+  //   fetchSpotRequests(currentPage);
+  // };
 
   const handleApproveSpot = async (spotApplyId: number) => {
     // handleRemoveApply(spotApplyId);
@@ -147,6 +148,7 @@ const SpotRequestManagement: React.FC = () => {
     );
     if (response.status == 200) {
       alert("거절되었습니다.");
+      // handleRemoveApply(spotApplyId);
     }
   };
 
