@@ -15,11 +15,11 @@ interface UserProfile {
   reviewCount: number;
   dittoCount: number;
   userProfileData: {
-    itemSkin: { imagePath: string };
-    itemHair: { imagePath: string };
-    itemEyes: { imagePath: string };
-    itemMouse: { imagePath: string };
-    itemAccessory: { imagePath: string };
+    itemSkin: { wearingImagePath: string };
+    itemHair: { wearingImagePath: string };
+    itemEyes: { wearingImagePath: string };
+    itemMouth: { wearingImagePath: string };
+    itemAccessory: { wearingImagePath: string };
   };
 }
 
@@ -140,13 +140,13 @@ const UserDetail: React.FC = () => {
     <Container>
       <Section>
         <h2>회원 정보</h2>
-        {userInfo && userInfo?.userProfileData.itemSkin && (
+        {userInfo && (
           <UserProfileImage
-            skin={userInfo.userProfileData.itemSkin.imagePath}
-            hair={userInfo.userProfileData.itemHair.imagePath}
-            eyes={userInfo.userProfileData.itemEyes.imagePath}
-            mouse={userInfo.userProfileData.itemMouse.imagePath}
-            accessory={userInfo.userProfileData.itemAccessory.imagePath}
+            skin={userInfo.userProfileData.itemSkin.wearingImagePath}
+            hair={userInfo.userProfileData.itemHair.wearingImagePath}
+            eyes={userInfo.userProfileData.itemEyes.wearingImagePath}
+            mouse={userInfo.userProfileData.itemMouth.wearingImagePath}
+            accessory={userInfo.userProfileData.itemAccessory.wearingImagePath}
           />
         )}
         {userInfo && (

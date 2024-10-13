@@ -110,6 +110,8 @@ const Input = styled.input`
 `;
 
 const SpotManagement: React.FC = () => {
+  const dittoURL = "https://ditto-trip.site";
+
   const token = localStorage.getItem("token");
 
   const [spots, setSpots] = useState<Spot[]>([]);
@@ -230,6 +232,7 @@ const SpotManagement: React.FC = () => {
             <Th>이름</Th>
             <Th>위치</Th>
             <Th>관리</Th>
+            <Th>링크</Th>
           </tr>
         </Thead>
         <tbody>
@@ -242,6 +245,15 @@ const SpotManagement: React.FC = () => {
                 <Button onClick={() => handleDeleteSpot(spot.spotId)}>
                   삭제
                 </Button>
+              </Td>
+              <Td>
+                <a
+                  href={`${dittoURL}/spot/${spot.spotId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  link
+                </a>
               </Td>
             </tr>
           ))}

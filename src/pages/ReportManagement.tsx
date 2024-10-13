@@ -212,7 +212,7 @@ const ReportManagement: React.FC = () => {
     }
   };
 
-  const dittoURL = "httpss://dittotrip.site"; // 배포 url
+  const dittoURL = "https://ditto-trip.site";
 
   return (
     <div>

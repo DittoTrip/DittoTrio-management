@@ -147,6 +147,8 @@ const ModalActions = styled.div`
 `;
 
 const CategoryManagement: React.FC = () => {
+  const dittoURL = "https://ditto-trip.site";
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
@@ -296,6 +298,7 @@ const CategoryManagement: React.FC = () => {
             <Th>스팟 개수</Th>
             <Th>등록일자</Th>
             <Th>비고</Th>
+            <Th>링크</Th>
           </tr>
         </Thead>
         <tbody>
@@ -310,6 +313,15 @@ const CategoryManagement: React.FC = () => {
                 <Button onClick={() => handleDeleteClick(category)}>
                   삭제
                 </Button>
+              </Td>
+              <Td>
+                <a
+                  href={`${dittoURL}/spot/list/${category.categoryId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  link
+                </a>
               </Td>
             </tr>
           ))}
